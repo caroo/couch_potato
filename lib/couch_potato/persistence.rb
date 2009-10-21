@@ -94,5 +94,12 @@ module CouchPotato
       other.class == self.class && self.to_json == other.to_json
     end
     
+    def initialize_copy(original)
+      original.attributes.each do |name, value|
+        self.send("#{name}=", clone_attribute(value))
+      end
+      return self
+    end
+    
   end    
 end

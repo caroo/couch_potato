@@ -14,7 +14,7 @@ module CouchPotato
       end
       
       # returns true if a model has dirty attributes, i.e. their value has changed since the last save
-      def dirty? 
+      def dirty?
         new? || self.class.properties.inject(false) do |res, property|
           res || property.dirty?(self)
         end
