@@ -73,9 +73,10 @@ module CouchPotato
       document.database = self
       
       if validate
+        document.errors.clear
         document.run_callbacks :before_validation_on_save
         document.run_callbacks :before_validation_on_create
-        return unless document.valid?
+        return false unless valid_document?(document)
       end
       
       document.run_callbacks :before_save
@@ -90,9 +91,10 @@ module CouchPotato
 
     def update_document(document, validate)
       if validate
+        document.errors.clear
         document.run_callbacks :before_validation_on_save
         document.run_callbacks :before_validation_on_update
-        return unless document.valid?
+        return false unless valid_document?(document)
       end
       
       document.run_callbacks :before_save
@@ -104,6 +106,15 @@ module CouchPotato
       true
     end
 
+    def valid_document?(document)
+      errors = document.errors.errors.dup
+      document.valid?
+      errors.each do |k, v|
+        v.each {|message| document.errors.add(k, message)}
+      end
+      document.errors.empty?
+    end
+    
     def database
       @database
     end
