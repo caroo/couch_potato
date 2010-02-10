@@ -64,6 +64,27 @@ describe 'dirty attribute tracking' do
         @plate.food = 'burger'
         @plate.food_was.should == 'sushi'
       end
+      
+      describe "with type BigDecimal" do
+        before(:each) do
+          class ::Plate
+            property :price
+          end
+        end
+        it "should not dup BigDecimal" do
+
+          lambda {
+            Plate.new :price => BigDecimal.new("5.23") 
+          }.should_not raise_error(TypeError)
+        end
+        
+        it "should return the old value" do
+          plate = Plate.new :price => BigDecimal.new("5.23") 
+          plate.price = BigDecimal.new("2.23")
+          plate.price_was.should == 5.23
+        end
+        
+      end
     end
 
     describe "check for dirty" do
@@ -91,13 +112,12 @@ describe 'dirty attribute tracking' do
         plate.should be_food_changed
         plate.should be_dirty
       end
-      
     end
   end
   
   describe "object loaded from database" do
     before(:each) do
-      couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => 'sushi', 'ruby_class' => 'Plate'}), :info => nil)
+      couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => 'sushi', JSON.create_id => 'Plate'}), :info => nil)
       @plate = CouchPotato::Database.new(couchrest_db).load_document '1'
     end
     
@@ -115,7 +135,7 @@ describe 'dirty attribute tracking' do
       end
       
       it "should return true if array attribute changed" do
-        couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => ['sushi'], 'ruby_class' => 'Plate'}), :info => nil)
+        couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => ['sushi'], JSON.create_id => 'Plate'}), :info => nil)
         plate = CouchPotato::Database.new(couchrest_db).load_document '1'
         plate.food << 'burger'
         plate.should be_food_changed
@@ -130,12 +150,21 @@ describe 'dirty attribute tracking' do
   
   describe "after save" do
     it "should reset all attributes to not dirty" do
-      couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => 'sushi', 'ruby_class' => 'Plate'}), :info => nil, :save_doc => {})
+      couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => 'sushi', JSON.create_id => 'Plate'}), :info => nil, :save_doc => {})
       db = CouchPotato::Database.new(couchrest_db)
       @plate = db.load_document '1'
       @plate.food = 'burger'
       db.save! @plate
       @plate.should_not be_food_changed
+    end
+    
+    it "should reset a forced dirty state" do
+      couchrest_db = stub('database', :get => Plate.json_create({'_id' => '1', '_rev' => '2', 'food' => 'sushi', JSON.create_id => 'Plate'}), :info => nil, :save_doc => {'rev' =>  '3'})
+      db = CouchPotato::Database.new(couchrest_db)
+      @plate = db.load_document '1'
+      @plate.is_dirty
+      db.save! @plate
+      @plate.should_not be_dirty
     end
   end
   

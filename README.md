@@ -20,24 +20,26 @@ Lastly Couch Potato aims to provide a seamless integration with Ruby on Rails, e
 
 ### Installation
 
-Couch Potato is hosted as a gem on github which you can install like this:
+Couch Potato is hosted as a gem which you can install like this:
 
-    sudo gem install couch_potato --source http://gemcutter.org
+    (sudo) gem install couch_potato
 
 #### Using with your ruby application:
 
     require 'rubygems'
     require 'couch_potato'
 
-Alternatively you can download or clone the source repository and then require lib/couch_potato.rb.
-
-You MUST specificy the name of the database:
+After that you configure the name of the database:
 
     CouchPotato::Config.database_name = 'name_of_the_db'
 
 The server URL will default to http://localhost:5984/ unless specified:
 
     CouchPotato::Config.database_name = "http://example.com:5984/name_of_the_db"
+  
+Optionally you can configure which framework you want to use for validations (either validatable or ActiveModel)
+
+    CouchPotato::Config.validation_framework = :validatable | :active_model
 
 #### Using with Rails
 
@@ -79,15 +81,28 @@ If you want to store any properties you have to declare them:
       property :name
     end
 
-Properties can be of any type:
+Properties can be typed:
 
     class User
       include CouchPotato::Persistence
 
       property :address, :type => Address
     end
+    
+In this case Address also implements CouchPotato::Persistence which means its JSON representation will be added to the user document.  
+Couch Potato also has support for the basic types (right now Fixnum and :boolean are supported):
 
-Properties can have a default value
+    class User
+      include CouchPotato::Persistence
+
+      property :age, :type => Fixnum
+      property :receive_newsletter, :type => :boolean
+    end
+
+With this in place when you set the user's age as a String (e.g. using an hTML form) it will be converted into a Fixnum automatically.
+    
+
+Properties can have a default value:
 
     class User
       include CouchPotato::Persistence
@@ -145,7 +160,7 @@ You can also force a dirty state:
 
 #### Object validations
 
-Couch Potato uses the validatable library for vaidation (http://validatable.rubyforge.org/)\
+Couch Potato uses the validatable library for validation (http://validatable.rubyforge.org/)\
 
     class User
       property :name
@@ -183,6 +198,14 @@ Composite keys are also possible:
       property :name
 
       view :all, :key => [:created_at, :name]
+    end
+
+You can also pass conditions as a JavaScript string:
+
+    class User
+      property :name
+
+      view :completed, :key => :name, :conditions => 'doc.completed === true'
     end
 
 The creation of views is based on view specification classes (see [CouchPotato::View::BaseViewSpec](http://rdoc.info/rdoc/langalex/couch_potato/blob/e8f0069e5529ad08a1bd1f02637ea8f1d6d0ab5b/CouchPotato/View/BaseViewSpec.html) and its descendants for more detailed documentation). The above code uses the ModelViewSpec class which is used to find models by their properties. For more sophisticated searches you can use other view specifications (either use the built-in or provide your own) by passing a type parameter:
@@ -281,9 +304,45 @@ To make testing easier and faster database logic has been put into its own class
 
 By creating you own instances of CouchPotato::Database and passing them a fake CouchRest database instance you can completely disconnect your unit tests/spec from the database.
 
+##### Testing map/reduce functions
+
+Couch Potato provides custom RSpec matchers for testing the map and reduce functions of your views. For example you can do this:
+
+    Class User
+      include CouchPotato::Persistence
+      
+      view :by_name, :key => :name
+      view :by_age, :key => :age
+    end
+    
+    #RSpec
+    require 'couch_potato/rspec/matchers'
+    
+    describe User, 'by_name' do
+      it "should map users to their name" do
+        User.by_name.should map({:name => 'bill', :age => 23}).to(['bill', null])
+      end
+      
+      it "should reduce the users to the sum of their age" do
+        User.by_age.should reduce([], [[23], [22]]).to(45)
+      end
+      
+      it "should rereduce" do
+        User.by_age.should rereduce([], [[23], [22]]).to(45)
+      end
+    end
+    
+This will actually run your map/reduce functions in a JavaScript interpreter, passing the arguments as JSON and converting the results back to Ruby. For more examples see the [spec](http://github.com/langalex/couch_potato/blob/master/spec/unit/rspec_matchers_spec.rb).
+
+In order for this to work you must have the `js` executable in your PATH. This is usually part of the _spidermonkey_ package/port. (On MacPorts that's _spidemonkey_, on Linux it could be one of _libjs_, _libmozjs_ or _libspidermonkey_). When you installed CouchDB via your packet manager Spidermonkey should already be there.
+
 ### Helping out
 
 Please fix bugs, add more specs, implement new features by forking the github repo at http://github.com/langalex/couch_potato.
+
+Issues are tracked at github: http://github.com/langalex/couch_potato/issues
+
+There is a mailing list, just write to: couchpotato@librelist.com
 
 You can run all the specs by calling 'rake spec_unit' and 'rake spec_functional' in the root folder of Couch Potato. The specs require a running CouchDB instance at http://localhost:5984
 

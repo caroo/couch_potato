@@ -1,11 +1,52 @@
 ## Changes
 
+### 0.2.24
+* persistent instances can now be marked as dirty with #is_dirty (langalex)
+
+### 0.2.23
+* Couch Potato models now conform to the ActiveModel interface when ActiveModel is installed, see http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/ (langalex)
+* fixed error with dirty tracking and BigDecimals (thilo)
+* added the ability to use ActiveModel validations instead of validatable (martinrehfeld)
+
+### 0.2.22
+* fixed properties with default values returned default when a blank value like '' or [] was set (langalex)
+
+### 0.2.21
+* automatically set a database instance on results of CouchPotato::Database#view (langalex)
+* improved auto loading of unloaded constants - can now load constants that have never been loaded before (langalex)
+* raise exception on invalid parameters passed to a couchdb view query (langalex)
+* when querying a view: pass in ranges as key instead of startkey/endkey, pass in plain value instead of hash with key (langalex) 
+
+### 0.2.20
+* support for :boolean properties (jweiss)
+* return the total_rows when querying a view (langalex)
+
+### 0.2.19
+* added conditions to views (langalex)
+
+### 0.2.18
+* set Fixnum property to nil when given a blank string (langalex)
+
+### 0.2.17
+* fixed nil attributes were omitted in json (jweiss, mattmatt)
+* support for properties of type Fixnum (langalex)
+
+### 0.2.16
+* fixed problem with classes being not loaded in rails development mode (langalex)
+* fixed persist boolean false value (bernd)
+
+### 0.2.15
+* ability to change the name of the attribute that stores the ruby class in the documents by setting JSON.create_id (lennart)
+* fixed double loading issue with bundler (jweiss)
+* fixed an issue with setting attachments (endor)
+
 ### 0.2.13
 
 * support adding errors in before_validation callbacks (mattmatt)
 * support for inheritance (mattmatt)
 * support for save without validations (mattmatt)
 * improved (de)serialization now supports deserializing nested objects (railsbros, specs by hagenburger)
+* RSpec matchers for testing map/reduce functions (langalex)
 
 ### 0.2.10
 * fixed bug with hardcoded timezone

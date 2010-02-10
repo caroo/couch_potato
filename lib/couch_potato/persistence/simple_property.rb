@@ -6,18 +6,14 @@ module CouchPotato
       def initialize(owner_clazz, name, options = {})
         self.name = name
         self.type = options[:type]
+        @type_caster = TypeCaster.new
         
         define_accessors accessors_module_for(owner_clazz), name, options
       end
       
       def build(object, json)
-        value = json[name.to_s] || json[name.to_sym]
-        typecast_value =  if type && !value.instance_of?(type)
-                            type.json_create value
-                          else
-                            value
-                          end
-        object.send "#{name}=", typecast_value
+        value = json[name.to_s].nil? ? json[name.to_sym] : json[name.to_s]
+        object.send "#{name}=", @type_caster.cast(value, type)
       end
       
       def dirty?(object)
@@ -52,7 +48,7 @@ module CouchPotato
 
           define_method "#{name}" do
             value = self.instance_variable_get("@#{name}")
-            if value.blank? && options[:default]
+            if value.nil? && options[:default]
               default = clone_attribute(options[:default])
               self.instance_variable_set("@#{name}", default)
               default
@@ -62,7 +58,7 @@ module CouchPotato
           end
           
           define_method "#{name}=" do |value|
-            self.instance_variable_set("@#{name}", value)
+            self.instance_variable_set("@#{name}", type_caster.cast(value, options[:type]))
           end
           
           define_method "#{name}?" do

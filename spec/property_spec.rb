@@ -107,7 +107,7 @@ describe 'properties' do
   end
   
   it "should persist an object" do
-    p = Person.new :name => 'Bob'
+    p = Person.new
     a = Address.new :city => 'Denver'
     p.ship_address = a
     CouchPotato.database.save_document! p
@@ -116,13 +116,74 @@ describe 'properties' do
   end
   
   it "should persist null for a null " do
-    p = Person.new :name => 'Bob'
+    p = Person.new
     p.ship_address = nil
     CouchPotato.database.save_document! p
     p = CouchPotato.database.load_document p.id
     p.ship_address.should be_nil
   end
   
+  it "should actually pass the null value down in the JSON document " do
+    p = Person.new
+    p.ship_address = nil
+    db = mock(:database)
+    db.should_receive(:save_doc).with do |attributes|
+      attributes.has_key?(:ship_address).should == true
+    end.and_return({})
+    CouchPotato.database.stub(:database).and_return(db)
+    CouchPotato.database.save_document! p
+  end
+
+  it "should persist false for a false" do
+    p = Person.new
+    p.ship_address = false
+    CouchPotato.database.save_document! p
+    p = CouchPotato.database.load_document p.id
+    p.ship_address.should be_false
+  end
+  
+  describe "boolean properties" do
+    it "should persist '0' for false" do
+      a = Address.new
+      a.verified = '0'
+      CouchPotato.database.save_document! a
+      a = CouchPotato.database.load_document a.id
+      a.verified.should be_false
+    end
+    
+    it "should persist 0 for false" do
+      a = Address.new
+      a.verified = 0
+      CouchPotato.database.save_document! a
+      a = CouchPotato.database.load_document a.id
+      a.verified.should be_false
+    end
+    
+    it "should persist '1' for true" do
+      a = Address.new
+      a.verified = '1'
+      CouchPotato.database.save_document! a
+      a = CouchPotato.database.load_document a.id
+      a.verified.should be_true
+    end
+    
+    it "should persist 1 for true" do
+      a = Address.new
+      a.verified = 1
+      CouchPotato.database.save_document! a
+      a = CouchPotato.database.load_document a.id
+      a.verified.should be_true
+    end
+    
+    it "should leave nil as nil" do
+      a = Address.new
+      a.verified = nil
+      CouchPotato.database.save_document! a
+      a = CouchPotato.database.load_document a.id
+      a.verified.should be_nil
+    end
+  end
+
   describe "predicate" do
     it "should return true if property set" do
       Comment.new(:title => 'title').title?.should be_true

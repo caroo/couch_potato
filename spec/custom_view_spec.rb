@@ -39,7 +39,7 @@ describe 'view' do
     CouchPotato.database.view Build.timeline(:key => 1)
   end
 
-  it "should not return documents that don't have a matching ruby_class" do
+  it "should not return documents that don't have a matching JSON.create_id" do
     CouchPotato.couchrest_database.save_doc({:time => 'x'})
     CouchPotato.database.view(Build.timeline).should == []
   end
@@ -52,27 +52,32 @@ describe 'view' do
   it "should count zero documents" do
     CouchPotato.database.view(Build.count(:reduce => true)).should == 0
   end
+  
+  it "should return the total_rows" do
+    CouchPotato.database.save_document Build.new(:state => 'success', :time => '2008-01-01')
+    CouchPotato.database.view(Build.count(:reduce => false)).total_rows.should == 1
+  end
 
   describe "properties defined" do
     it "should assign the configured properties" do
-      CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', :ruby_class => 'Build')
+      CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', JSON.create_id.to_sym => 'Build')
       CouchPotato.database.view(Build.minimal_timeline).first.state.should == 'success'
     end
 
     it "should not assign the properties not configured" do
-      CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', :ruby_class => 'Build')
+      CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', JSON.create_id.to_sym => 'Build')
       CouchPotato.database.view(Build.minimal_timeline).first.time.should be_nil
     end
 
     it "should assign the id even if it is not configured" do
-      id = CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', :ruby_class => 'Build')['id']
+      id = CouchPotato.couchrest_database.save_doc(:state => 'success', :time => '2008-01-01', JSON.create_id.to_sym => 'Build')['id']
       CouchPotato.database.view(Build.minimal_timeline).first._id.should == id
     end
   end
 
   describe "no properties defined" do
     it "should assign all properties to the objects by default" do
-      id = CouchPotato.couchrest_database.save_doc({:state => 'success', :time => '2008-01-01', :ruby_class => 'Build'})['id']
+      id = CouchPotato.couchrest_database.save_doc({:state => 'success', :time => '2008-01-01', JSON.create_id.to_sym => 'Build'})['id']
       result = CouchPotato.database.view(Build.timeline).first
       result.state.should == 'success'
       result.time.should == '2008-01-01'
@@ -112,8 +117,8 @@ describe 'view' do
         CouchPotato.database.view(Build.custom_timeline_returns_docs).map(&:state).should == ['success']
       end
       
-      it "should still return instance of class if document included 'ruby_class'" do
-        CouchPotato.couchrest_database.save_doc({:state => 'success', :time => '2008-01-01', :ruby_class => "Build"})
+      it "should still return instance of class if document included JSON.create_id" do
+        CouchPotato.couchrest_database.save_doc({:state => 'success', :time => '2008-01-01', JSON.create_id.to_sym => "Build"})
         view_data = CouchPotato.database.view(Build.custom_timeline_returns_docs)
         view_data.map(&:class).should == [Build]
         view_data.map(&:state).should == ['success']
@@ -125,14 +130,13 @@ describe 'view' do
         doc = CouchPotato.couchrest_database.save_doc({})
         CouchPotato.couchrest_database.save_doc({:foreign_key => doc['id']})
         CouchPotato.database.view(Build.custom_with_reduce).map(&:_id).should == [doc['id']]
-        
       end
     end
   end
 
   describe "with array as key" do
     it "should create a map function with the composite key" do
-      CouchPotato::View::ViewQuery.should_receive(:new).with(anything, anything, anything, string_matching(/emit\(\[doc\['time'\], doc\['state'\]\]/), anything).and_return(stub('view query').as_null_object)
+      CouchPotato::View::ViewQuery.should_receive(:new).with(anything, anything, anything, string_matching(/emit\(\[doc\['time'\], doc\['state'\]\]/), anything).and_return(stub('view query', :query_view! => {'rows' => []}))
       CouchPotato.database.view Build.key_array_timeline
     end
   end
@@ -159,7 +163,7 @@ describe 'view' do
   describe "inherited views" do
     it "should support parent views for objects of the subclass" do
       CouchPotato.database.save_document CustomBuild.new(:state => 'success', :time => '2008-01-01')
-      CouchPotato.database.view(CustomBuild.timeline).should have(1).item
+      CouchPotato.database.view(CustomBuild.timeline).size.should == 1
       CouchPotato.database.view(CustomBuild.timeline).first.should be_kind_of(CustomBuild)
     end
   end
