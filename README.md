@@ -90,7 +90,6 @@ Properties can be typed:
     end
     
 In this case Address also implements CouchPotato::Persistence which means its JSON representation will be added to the user document.  
-
 Couch Potato also has support for the basic types (right now Fixnum, Date, Time and :boolean are supported):
 
     class User
