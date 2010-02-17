@@ -5,11 +5,10 @@
 
 Gem::Specification.new do |s|
   s.name = %q{couch_potato}
-  s.version = "0.2.24"
-
+  s.version = "0.2.25"
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alexander Lang"]
-  s.date = %q{2010-02-05}
+  s.date = %q{2010-02-17}
   s.description = %q{Ruby persistence layer for CouchDB}
   s.email = %q{alex@upstream-berlin.com}
   s.extra_rdoc_files = [
@@ -39,6 +38,7 @@ Gem::Specification.new do |s|
      "lib/couch_potato/persistence/properties.rb",
      "lib/couch_potato/persistence/simple_property.rb",
      "lib/couch_potato/persistence/type_caster.rb",
+     "lib/couch_potato/railtie.rb",
      "lib/couch_potato/rspec/matchers.rb",
      "lib/couch_potato/rspec/matchers/map_to_matcher.rb",
      "lib/couch_potato/rspec/matchers/print_r.js",
@@ -82,7 +82,8 @@ Gem::Specification.new do |s|
      "spec/unit/string_spec.rb",
      "spec/unit/validation_spec.rb",
      "spec/unit/view_query_spec.rb",
-     "spec/update_spec.rb"
+     "spec/update_spec.rb",
+     "spec/view_updates_spec.rb"
   ]
   s.homepage = %q{http://github.com/langalex/couch_potato}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -116,7 +117,8 @@ Gem::Specification.new do |s|
      "spec/unit/string_spec.rb",
      "spec/unit/validation_spec.rb",
      "spec/unit/view_query_spec.rb",
-     "spec/update_spec.rb"
+     "spec/update_spec.rb",
+     "spec/view_updates_spec.rb"
   ]
 
   if s.respond_to? :specification_version then

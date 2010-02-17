@@ -103,6 +103,16 @@ describe 'dirty attribute tracking' do
         @plate.should_not be_food_changed
       end
       
+      it "should return true if a deep property is dirty" do
+        subsub_plate = Plate.new(:food => "salat")
+        sub_plate = Plate.new(:food => subsub_plate)
+        plate = Plate.new(:food => sub_plate)
+        @db.save_document(plate)
+        subsub_plate.food = "fries"
+        plate.should be_food_changed
+        plate.should be_dirty
+      end
+
       it "should return true if forced dirty" do
         @plate.is_dirty
         @plate.should be_dirty
