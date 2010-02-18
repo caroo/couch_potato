@@ -10,8 +10,8 @@ module CouchPotato
         @reduce_function = reduce_function
       end
 
-      def query_view!(parameters = {})
-        update_view unless view_has_been_updated?
+      def query_view!(parameters = {}, auto_view_update = true)
+        update_view unless view_has_been_updated? if auto_view_update
         begin
           query_view parameters
         rescue RestClient::ResourceNotFound# => e

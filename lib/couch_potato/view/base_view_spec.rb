@@ -22,6 +22,10 @@ module CouchPotato
         results
       end
       
+      def auto_view_update?
+        true
+      end
+      
       private
       
       def normalize_view_parameters(params)

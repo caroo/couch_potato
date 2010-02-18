@@ -18,4 +18,10 @@ describe CouchPotato::View::ViewQuery, 'query_view' do
     db.should_receive(:save_doc)
     CouchPotato::View::ViewQuery.new(db, 'design', 'view2', 'mapnew', 'reduce').query_view!
   end
+  
+  it "should not update a view if the view has not been updated and auto_view_update is disabled" do
+    db = mock 'db', :get => {'views' => {'view' => {'map' => 'map', 'reduce' => 'reduce'}}}, :view => nil
+    db.should_not_receive(:save_doc)
+    CouchPotato::View::ViewQuery.new(db, 'design', 'view', 'map', 'reduce').query_view!({}, false)
+  end
 end

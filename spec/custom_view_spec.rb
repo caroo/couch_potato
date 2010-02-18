@@ -36,7 +36,7 @@ describe 'view' do
   it "should pass the view options to the view query" do
     query = mock 'query'
     CouchPotato::View::ViewQuery.stub!(:new).and_return(query)
-    query.should_receive(:query_view!).with(hash_including(:key => 1)).and_return('rows' => [])
+    query.should_receive(:query_view!).with(hash_including(:key => 1), true).and_return('rows' => [])
     CouchPotato.database.view Build.timeline(:key => 1)
   end
 
@@ -164,7 +164,7 @@ describe 'view' do
     it "should pass view options declared in the view declaration to the query" do
      view_query = mock 'view_query'
      CouchPotato::View::ViewQuery.stub!(:new).and_return(view_query)
-     view_query.should_receive(:query_view!).with(hash_including(:group => true)).and_return({'rows' => []})
+     view_query.should_receive(:query_view!).with(hash_including(:group => true), true).and_return({'rows' => []})
      CouchPotato.database.view(Build.with_view_options)
     end
   end

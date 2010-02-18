@@ -43,7 +43,7 @@ module CouchPotato
     def view(spec)
       results = CouchPotato::View::ViewQuery.new(database,
         spec.design_document, spec.view_name, spec.map_function,
-        spec.reduce_function).query_view!(spec.view_parameters)
+        spec.reduce_function).query_view!(spec.view_parameters, spec.auto_view_update?)
       processed_results = spec.process_results results
       processed_results.instance_eval "def total_rows; #{results['total_rows']}; end" if results['total_rows']
       processed_results.each do |document|
