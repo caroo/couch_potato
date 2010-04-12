@@ -269,14 +269,15 @@ If you need access to the database in a callback: Couch Potato automatically ass
 
 #### Attachments
 
-There is basic attachment support: if you want to store any attachments set that _attachments attribute of a model before saving like this:
+There is basic attachment support: if you want to store any attachments set the _attachments attribute of a model before saving like this:
 
     class User
       include CouchPotato::Persistence
     end
     
+    data = File.read('some_file.text') # or from upload
     user = User.new
-    user._attachments = {'photo' => {'data' => '[image byte data]', 'content_type' => 'image/png'}}
+    user._attachments = {'photo' => {'data' => data, 'content_type' => 'image/png'}}
     
 When saving this object an attachment with the name _photo_ will be uploaded into CouchDB. It will be available under the url of the user object + _/photo_. When loading the user at a later time you still have access to the _content_type_ and additionally to the _length_ of the attachment:
 
@@ -304,6 +305,20 @@ To make testing easier and faster database logic has been put into its own class
 
 By creating you own instances of CouchPotato::Database and passing them a fake CouchRest database instance you can completely disconnect your unit tests/spec from the database.
 
+For stubbing out the database couch potato offers some helpers:
+
+    class Comment
+      view :by_commenter_id, :key => :commenter_id
+    end
+    
+    # RSpec
+    require 'couch_potato/rspec'
+    
+    db = stub_db # stubs CouchPotato.database
+    db.stub_view(Comment, :by_commenter_id).with('23').and_return([:comment1, :comment2])
+    
+    CouchPotato.database.view(Comment.by_commenter_id('23)) # => [:comment1, :comment2]
+
 ##### Testing map/reduce functions
 
 Couch Potato provides custom RSpec matchers for testing the map and reduce functions of your views. For example you can do this:
@@ -316,11 +331,11 @@ Couch Potato provides custom RSpec matchers for testing the map and reduce funct
     end
     
     #RSpec
-    require 'couch_potato/rspec/matchers'
+    require 'couch_potato/rspec'
     
     describe User, 'by_name' do
       it "should map users to their name" do
-        User.by_name.should map({:name => 'bill', :age => 23}).to(['bill', null])
+        User.by_name.should map(User.new(:name => 'bill', :age => 23)).to(['bill', null])
       end
       
       it "should reduce the users to the sum of their age" do
