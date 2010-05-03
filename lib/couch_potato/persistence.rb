@@ -94,7 +94,6 @@ module CouchPotato
     def ==(other) #:nodoc:
       other.class == self.class && self.to_json == other.to_json
     end
-<<<<<<< HEAD
     
     def initialize_copy(original)
       original.attributes.each do |name, value|
@@ -103,12 +102,9 @@ module CouchPotato
       return self
     end
     
-=======
-   
     def inspect
       attributes_as_string = attributes.map {|attribute, value| "#{attribute}: '#{value}'"}.join(", ")
       "#<#{self.class} _id: '#{_id}', _rev: '#{_rev}', #{attributes_as_string}>"
     end
->>>>>>> 5e4925c631e71e85f6c81c506f2473de389dec82
   end    
 end
