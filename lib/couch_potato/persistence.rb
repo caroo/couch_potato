@@ -73,7 +73,7 @@ module CouchPotato
     #   book.attributes # => {:title => nil, :year => 2009}
     def attributes
       self.class.properties.inject({}) do |res, property|
-        property.serialize(res, self)
+        property.value(res, self)
         res
       end
     end
@@ -103,8 +103,8 @@ module CouchPotato
     end
     
     def inspect
-      attributes_as_string = attributes.map {|attribute, value| "#{attribute}: '#{value}'"}.join(", ")
-      "#<#{self.class} _id: '#{_id}', _rev: '#{_rev}', #{attributes_as_string}>"
+      attributes_as_string = attributes.map {|attribute, value| "#{attribute}: #{value.inspect}"}.join(", ")
+      %Q{#<#{self.class} _id: "#{_id}", _rev: "#{_rev}", #{attributes_as_string}>}
     end
   end    
 end
