@@ -108,5 +108,5 @@ module CouchPotato
       %Q{#<#{self.class} _id: "#{_id}", _rev: "#{_rev}", #{attributes_as_string}>}
     end
     
-  end    
+  end
 end
