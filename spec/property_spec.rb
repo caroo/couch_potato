@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require 'spec_helper'
 require File.join(File.dirname(__FILE__), 'fixtures', 'address')
 require File.join(File.dirname(__FILE__), 'fixtures', 'person')
 
@@ -269,6 +269,47 @@ describe 'properties' do
       clock = CuckooClock.new(:time => Time.now, :cuckoo => 'bavarian')
       clock.attributes[:time].should_not == nil
       clock.attributes[:cuckoo].should == 'bavarian'
+    end
+  end
+  
+  describe "inspecting an object" do
+    let(:comment) do
+      comment = Comment.new(:title => 'title')
+      comment.instance_eval do
+        @_id = "123456abcdef"
+        @_rev = "1-654321fedcba"
+      end
+      comment
+    end
+    
+    it "should not include change-tracking variables" do
+      comment.inspect.should_not include('title_was')
+    end
+    
+    it "should include the normal persistent variables" do
+      comment.inspect.should include('title: "title"')
+    end
+    
+    it "should include the id" do
+      comment.inspect.should include(%Q{_id: "123456abcdef",})
+    end
+    
+    it "should include the revision" do
+      comment.inspect.should include(%Q{_rev: "1-654321fedcba",})
+    end
+    
+    it "should return a complete string" do
+      # stub to work around (un)sorted hash on different rubies
+      comment.stub!(:attributes).and_return([['created_at', ''], ['updated_at', ''], ['title', 'title']])
+      comment.inspect.should == %Q{#<Comment _id: "123456abcdef", _rev: "1-654321fedcba", created_at: "", updated_at: "", title: "title">}
+    end
+    
+    it "should include complex datatypes fully inspected" do
+      comment.title = {'en' => 'Blog post'}
+      comment.inspect.should include('title: {"en"=>"Blog post"}')
+      
+      comment.title = nil
+      comment.inspect.should include('title: nil')
     end
   end
 end

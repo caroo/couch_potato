@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 begin
   require 'active_model'
@@ -23,6 +23,31 @@ begin
     before(:each) do
       @model = ActiveComment.new
     end
+    
+    describe "#persisted?" do
+      it "should return false if it is a new document " do
+        @model.should_not be_persisted
+      end
+      
+      it "should be true if it was saved" do
+        @comment = ActiveComment.new(:name => 'Thilo', :email => 'test@local.host')
+        CouchPotato.database.save_document! @comment
+        @comment.should be_persisted
+      end
+    end
+    
+    describe "#to_key" do
+      it "should return nil if the document was not persisted" do
+        @model.to_key.should be_nil
+      end
+      
+      it "should return the id of the document if it was persisted" do
+        @comment = ActiveComment.new(:name => 'Thilo', :email => 'test@local.host')
+        CouchPotato.database.save_document! @comment
+        @comment.to_key.should == [@comment.id]
+      end
+    end
+    
     
     describe "#errors" do
       it "should return a single error as array" do
@@ -55,7 +80,7 @@ begin
       end
     end
 
-    def assert(boolean, message)
+    def assert(boolean, message = '')
       boolean || raise(message)
     end
 

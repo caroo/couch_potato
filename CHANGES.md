@@ -1,7 +1,30 @@
 ## Changes
 
-### master
+### 0.2.31
+* Removed requirement for validatable gem. Allows for using more uptodate versions of the library, or doesn't install it when you're using ActiveModel. (mattmatt)
+* fixed callbacks of super classes were not run (langalex)
+
+### 0.2.30
+* pass in multiple keys when querying a view (langalex)
+
+### 0.2.29
+* nicer inspect() for models (mattmatt)
+* fixed (re)reduce for property views wasn't working (langalex)
+
+### 0.2.28
+* fixed reloading nested classes (langalex)
+* fixed constant missing error when loading models with uninitialized classes via views (langalex)
+* added rspec helpers for stubbing out views (langalex)
+* fixed design document names for nested model classes (svenfuchs)
+
+### 0.2.27
+* workaround for Rails apps using bundler: database name was not initialized from couchdb.yml (langalex)
+
+### 0.2.26
 * added to_s(:json) to Date and Time to be able to get properly formatted dates/times for searching with dates/times (langalex)
+* all times are now stored as UTC (langalex)
+* added support for Float attributes (arbovm)
+
 
 ### 0.2.25
 * automatic view updates: when you change the definition of a view couch potato will now update the design document in the database (langalex)
