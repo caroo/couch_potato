@@ -43,7 +43,7 @@ begin
     s.files = FileList["[A-Z]*.*", "{lib,spec,rails}/**/*", "init.rb"]
     s.add_dependency 'json'
     s.add_dependency 'validatable'
-    s.add_dependency 'couchrest', '>=0.24'
+    s.add_dependency 'couchrest', '~>1.0.0'
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
